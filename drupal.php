@@ -155,3 +155,39 @@ function drupal_paragraph_get ($drupal, $id) {
 
   return $result;
 }
+
+/**
+ * drupal_path: entity_type_id/bundle/field_name
+ */
+function drupal_file_upload ($drupal, $file, $drupal_path) {
+  $ch = curl_init();
+
+  $file_content = file_get_contents($file);
+
+  curl_setopt($ch, CURLOPT_URL, "{$drupal['url']}/file/upload/{$drupal_path}?_format=json");
+  curl_setopt($ch, CURLOPT_POST, true);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-type: application/octet-stream',
+    "Content-Disposition: file; filename=\"{$file}\""
+  ]);
+  curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
+  curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+  curl_setopt($ch, CURLOPT_VERBOSE, true);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $file_content);
+
+  $result = curl_exec($ch);
+  if ($result[0] !== '{') {
+    print $result;
+    exit(1);
+  }
+
+  $result = json_decode($result, true);
+
+  if (!array_key_exists('fid', $result)) {
+    print_r($result);
+    exit(1);
+  }
+
+  return $result;
+}
