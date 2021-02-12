@@ -1,4 +1,42 @@
 <?php
+function drupal_load_rest_export ($drupal, $path, $options = array()) {
+  $ch = curl_init();
+  $total = array();
+
+  if (!array_key_exists('page_size', $options)) {
+    $options['page_size'] = 0;
+  }
+
+  $page = 0;
+  do {
+    $sep = strpos($path, '?') === false ? '?' : '&';
+    curl_setopt($ch, CURLOPT_URL, "{$drupal['url']}{$path}{$sep}page={$page}&_format=json");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '[') {
+      print "Error loading: " . $result;
+      exit(1);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!$result || !sizeof($result)) {
+      $result = array();
+    }
+
+    $total = array_merge($total, $result);
+    $page++;
+  } while(sizeof($result) > 0 && sizeof($result) === $options['page_size']);
+
+  return $total;
+}
+
 function drupal_node_get ($drupal, $id, $options = array()) {
   $ch = curl_init();
 
