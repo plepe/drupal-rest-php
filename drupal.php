@@ -6,7 +6,9 @@ function drupal_node_get ($drupal, $id, $options = array()) {
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
   curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-  //curl_setopt($ch, CURLOPT_VERBOSE, true);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
 
   $result = curl_exec($ch);
   if ($result[0] !== '{') {
@@ -83,6 +85,9 @@ function drupal_node_save ($drupal, $nid, $content) {
   ]);
   curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
   curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
 
   $result = curl_exec($ch);
   if ($result[0] !== '{') {
@@ -121,6 +126,9 @@ function drupal_paragraph_save ($drupal, $id, $content) {
   ]);
   curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
   curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
 
   $result = curl_exec($ch);
   if ($result[0] !== '{') {
@@ -150,6 +158,9 @@ function drupal_paragraph_get ($drupal, $id) {
   ]);
   curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
   curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
 
   $result = curl_exec($ch);
   if ($result[0] !== '{') {
@@ -184,7 +195,9 @@ function drupal_file_upload ($drupal, $file, $drupal_path) {
   ]);
   curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
   curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-  curl_setopt($ch, CURLOPT_VERBOSE, true);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
   curl_setopt($ch, CURLOPT_POSTFIELDS, $file_content);
 
   $result = curl_exec($ch);
