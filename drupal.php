@@ -9,7 +9,18 @@ function drupal_node_get ($drupal, $id, $options = array()) {
   //curl_setopt($ch, CURLOPT_VERBOSE, true);
 
   $result = curl_exec($ch);
+  if ($result[0] !== '{') {
+    print "Error loading '/node/{$id}': " . $result;
+    exit(1);
+  }
+
   $result = json_decode($result, true);
+
+  if (!array_key_exists('nid', $result)) {
+    print "Error loading '/node/{$id}': ";
+    print_r($result);
+    exit(1);
+  }
 
   if (!$result || !sizeof($result)) {
     return null;
