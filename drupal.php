@@ -143,6 +143,27 @@ function drupal_node_save ($drupal, $nid, $content) {
   return $result;
 }
 
+function drupal_node_remove ($drupal, $nid) {
+  $ch = curl_init();
+
+  curl_setopt($ch, CURLOPT_URL, "{$drupal['url']}/node/{$nid}?_format=json");
+  curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-type: application/json',
+  ]);
+  curl_setopt($ch, CURLOPT_USERPWD, "{$drupal['user']}:{$drupal['pass']}");
+  curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+  if (array_key_exists('verbose', $drupal) && $drupal['verbose']) {
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+  }
+
+  $result = curl_exec($ch);
+
+  return true;
+}
+
 function drupal_paragraph_save ($drupal, $id, $content) {
   $current_node = null;
 
