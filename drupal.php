@@ -148,6 +148,79 @@ class DrupalRestAPI {
     return $result;
   }
 
+  function userGet ($id, $options = array()) {
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/{$id}?_format=json");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '{') {
+      print "Error loading '/user/{$id}': " . $result;
+      exit(1);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!array_key_exists('uid', $result)) {
+      print "Error loading '/user/{$id}': ";
+      print_r($result);
+      exit(1);
+    }
+
+    if (!$result || !sizeof($result)) {
+      return null;
+    }
+
+    return $result;
+  }
+
+  function userSave ($nid, $content) {
+    $current_node = null;
+
+    $ch = curl_init();
+
+    if ($nid) {
+      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/{$nid}?_format=json");
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    }
+    else {
+      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/user?_format=json");
+      curl_setopt($ch, CURLOPT_POST, true);
+    }
+
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Content-type: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '{') {
+      print $result;
+      exit(1);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!array_key_exists('uid', $result)) {
+      print_r($result);
+      exit(1);
+    }
+
+    return $result;
+  }
+
   function nodeRemove ($nid) {
     $ch = curl_init();
 
