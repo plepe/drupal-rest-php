@@ -315,6 +315,29 @@ class DrupalRestAPI {
     return $result;
   }
 
+  function paragraphRemove ($id) {
+    $current_node = null;
+
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Content-type: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+
+    $result = curl_exec($ch);
+
+    return true;
+  }
+
   /**
    * entityPath: entity_type_id/bundle/field_name
    */
