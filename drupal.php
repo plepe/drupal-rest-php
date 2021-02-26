@@ -3,8 +3,11 @@ class DrupalRestAPI {
   function __construct ($options = array()) {
     $this->options = $options;
 
-    if (!array_key_exists('verbose', $this->options)) {
-      $this->options['verbose'] = false;
+    if (!array_key_exists('curl_options', $this->options)) {
+      $this->options['curl_options'] = array();
+    }
+    if (array_key_exists('verbose', $this->options)) {
+      $this->options['curl_options'][CURLOPT_VERBOSE] = $this->options['verbose'];
     }
   }
 
@@ -19,8 +22,8 @@ class DrupalRestAPI {
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
       curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-      if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
+      foreach ($this->options['curl_options'] as $k => $v) {
+        curl_setopt($ch, $k, $v);
       }
 
       $result = curl_exec($ch);
@@ -49,8 +52,8 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -130,7 +133,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -156,8 +161,8 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -204,7 +209,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -235,8 +242,8 @@ class DrupalRestAPI {
     ]);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -267,7 +274,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    }
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -298,8 +307,8 @@ class DrupalRestAPI {
     ]);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -358,8 +367,8 @@ class DrupalRestAPI {
     ]);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
     }
     curl_setopt($ch, CURLOPT_POSTFIELDS, $file_content);
 
