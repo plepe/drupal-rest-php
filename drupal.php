@@ -186,6 +186,38 @@ class DrupalRestAPI {
     return $result;
   }
 
+  function fileGet ($id, $options = array()) {
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/file/{$id}?_format=json");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
+    }
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '{') {
+      print "Error loading '/entity/file/{$id}': " . $result;
+      exit(1);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!array_key_exists('fid', $result)) {
+      print "Error loading '/entity/file/{$id}': ";
+      print_r($result);
+      exit(1);
+    }
+
+    if (!$result || !sizeof($result)) {
+      return null;
+    }
+
+    return $result;
+  }
+
   function userSave ($nid, $content) {
     $current_node = null;
 
