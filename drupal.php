@@ -388,21 +388,27 @@ class DrupalRestAPI {
   function fileUpload ($file, $entityPath) {
     $ch = curl_init();
 
-    $file_content = file_get_contents($file);
+    if (!is_array($file)) {
+      $file['filename'] = $file;
+    }
+
+    if (!array_key_exists('content', $file)) {
+      $file['content'] = file_get_contents($file['filename']);
+    }
 
     curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/file/upload/{$entityPath}?_format=json");
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/octet-stream',
-      "Content-Disposition: file; filename=\"{$file}\""
+      "Content-Disposition: file; filename=\"{$file['filename']}\""
     ]);
     curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     foreach ($this->options['curl_options'] as $k => $v) {
       curl_setopt($ch, $k, $v);
     }
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $file_content);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $file['content']);
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
