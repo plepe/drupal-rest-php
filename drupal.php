@@ -12,8 +12,10 @@ class DrupalRestAPI {
   }
 
   function setOptions ($ch) {
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (isset($this->options['user'])) {
+      curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+      curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    }
 
     foreach ($this->options['curl_options'] as $k => $v) {
       curl_setopt($ch, $k, $v);
