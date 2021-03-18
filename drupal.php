@@ -11,6 +11,15 @@ class DrupalRestAPI {
     }
   }
 
+  function setOptions ($ch) {
+    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
+    }
+  }
+
   function loadRestExport ($path, $options = array()) {
     $ch = curl_init();
     $total = array();
@@ -20,11 +29,7 @@ class DrupalRestAPI {
       $sep = strpos($path, '?') === false ? '?' : '&';
       curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}{$path}{$sep}page={$page}&_format=json");
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-      curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-      foreach ($this->options['curl_options'] as $k => $v) {
-        curl_setopt($ch, $k, $v);
-      }
+      $this->setOptions($ch);
 
       $result = curl_exec($ch);
       if ($result[0] !== '[') {
@@ -50,11 +55,7 @@ class DrupalRestAPI {
 
     curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/node/{$id}?_format=json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
@@ -129,13 +130,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-    }
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -159,11 +156,7 @@ class DrupalRestAPI {
 
     curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/{$id}?_format=json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
@@ -191,11 +184,7 @@ class DrupalRestAPI {
 
     curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/file/{$id}?_format=json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
@@ -237,13 +226,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-    }
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -272,11 +257,7 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
 
@@ -302,13 +283,9 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-    }
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
     }
 
     $result = curl_exec($ch);
@@ -337,11 +314,7 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
@@ -371,11 +344,7 @@ class DrupalRestAPI {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      curl_setopt($ch, CURLOPT_VERBOSE, true);
-    }
+    $this->setOptions($ch);
 
     $result = curl_exec($ch);
 
@@ -403,11 +372,7 @@ class DrupalRestAPI {
       'Content-type: application/octet-stream',
       "Content-Disposition: file; filename=\"{$file['filename']}\""
     ]);
-    curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    $this->setOptions($ch);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $file['content']);
 
     $result = curl_exec($ch);
