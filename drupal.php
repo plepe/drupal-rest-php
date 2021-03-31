@@ -427,4 +427,44 @@ class DrupalRestAPI {
 
     return curl_exec($ch);
   }
+
+  function download ($url, $file) {
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/login");
+    curl_setopt($ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    foreach ($this->options['curl_options'] as $k => $v) {
+      curl_setopt($ch, $k, $v);
+    }
+
+    // This array will hold the field names and values.
+    $postdata=array(
+      "name"=>$this->options['email'],
+      "pass"=>$this->options['pass'],
+      "form_id"=>"user_login_form",
+      "op"=>"Log in"
+    );
+    // Tell curl we're going to send $postdata as the POST data
+    curl_setopt ($ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
+
+    $result=curl_exec($ch);
+    $headers = curl_getinfo($ch);
+
+    if ($headers['url'] == $this->options['url']) {
+        die("Cannot login.");
+    }
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}{$url}");
+    $fp = fopen($file, 'w+');
+    curl_setopt($ch, CURLOPT_FILE, $fp);
+
+    $result = curl_exec($ch);
+    fclose($fp);
+
+    return $result;
+  }
 }
