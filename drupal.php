@@ -26,6 +26,8 @@ class DrupalRestAPI {
     $ch = curl_init();
     $total = array();
 
+    $options['paginated'] = array_key_exists('paginated', $options) ? $options['paginated'] : true;
+
     $page = 0;
     do {
       $sep = strpos($path, '?') === false ? '?' : '&';
@@ -47,7 +49,7 @@ class DrupalRestAPI {
 
       $total = array_merge($total, $result);
       $page++;
-    } while(sizeof($result) > 0);
+    } while($options['paginated'] && sizeof($result) > 0);
 
     return $total;
   }
