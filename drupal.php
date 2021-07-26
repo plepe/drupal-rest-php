@@ -360,7 +360,9 @@ class DrupalRestAPI {
     $ch = curl_init();
 
     if (!is_array($file)) {
-      $file['filename'] = $file;
+      $file = array(
+        'filename' => $file,
+      );
     }
 
     if (!array_key_exists('content', $file)) {
