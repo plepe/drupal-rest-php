@@ -367,6 +367,11 @@ class DrupalRestAPI {
 
     if (!array_key_exists('content', $file)) {
       $file['content'] = file_get_contents($file['filename']);
+
+      if ($file['content'] === false) {
+        fwrite(STDERR, "Could not open file {$file['filename']}\n");
+        exit(1);
+      }
     }
 
     curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/file/upload/{$entityPath}?_format=json");
