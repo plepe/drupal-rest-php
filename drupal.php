@@ -36,7 +36,7 @@ class DrupalRestAPI {
       $this->setOptions($ch);
 
       $result = curl_exec($ch);
-      if ($result[0] !== '[') {
+      if (!$result || $result[0] !== '[') {
         print "Error loading: " . $result;
         exit(1);
       }
