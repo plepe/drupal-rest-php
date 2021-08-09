@@ -111,7 +111,8 @@ class DrupalRestAPI {
             $content[$field_id][$index] = ['target_id' => $current_node[$field_id][$index]['target_id']];
           }
           else {
-            $content[$field_id][$index] = ['target_id' => $this->nodeSave(null, $_d2['data'])];
+            $_node = $this->nodeSave(null, $_d2['data']);
+            $content[$field_id][$index] = ['target_id' => $_node['nid'][0]['value']];
           }
 
         }
