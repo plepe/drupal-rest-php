@@ -37,8 +37,7 @@ class DrupalRestAPI {
 
       $result = curl_exec($ch);
       if (!$result || $result[0] !== '[') {
-        print "Error loading: " . $result;
-        exit(1);
+        throw new Exception("Error loading: " . $result);
       }
 
       $result = json_decode($result, true);
@@ -63,16 +62,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print "Error loading '/node/{$id}': " . $result;
-      exit(1);
+      throw new Exception("Error loading '/node/{$id}': " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('nid', $result)) {
-      print "Error loading '/node/{$id}': ";
-      print_r($result);
-      exit(1);
+      throw new Exception("Error loading '/node/{$id}'");
     }
 
     if (!$result || !sizeof($result)) {
@@ -142,15 +138,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print $result;
-      exit(1);
+      throw new Exception("Error saving node: " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('nid', $result)) {
-      print_r($result);
-      exit(1);
+      throw new Exception($result['message']);
     }
 
     return $result;
@@ -165,16 +159,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print "Error loading '/user/{$id}': " . $result;
-      exit(1);
+      throw new Exception("Error loading '/user/{$id}': " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('uid', $result)) {
-      print "Error loading '/user/{$id}': ";
-      print_r($result);
-      exit(1);
+      throw new Exception("Error loading '/user/{$id}': " . $result['message']);
     }
 
     if (!$result || !sizeof($result)) {
@@ -193,16 +184,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print "Error loading '/entity/file/{$id}': " . $result;
-      exit(1);
+      throw new Exception("Error loading '/entity/file/{$id}': " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('fid', $result)) {
-      print "Error loading '/entity/file/{$id}': ";
-      print_r($result);
-      exit(1);
+      throw new Exception("Error loading '/entity/file/{$id}': " . $result['message']);
     }
 
     if (!$result || !sizeof($result)) {
@@ -238,15 +226,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print $result;
-      exit(1);
+      throw new Exception("Error saving '/user/{$nid}': " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('uid', $result)) {
-      print_r($result);
-      exit(1);
+      throw new Exception("Error saving '/user/{$nid}': " . $result['message']);
     }
 
     return $result;
@@ -295,15 +281,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print $result;
-      exit(1);
+      throw new Exception("Error saving paragraph/$id: " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('id', $result)) {
-      print_r($result);
-      exit(1);
+      throw new Exception("Error saving paragraph/$id: " . $result['message']);
     }
 
     return $result;
@@ -323,15 +307,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print $result;
-      exit(1);
+      throw new Exception("Error loading paragraph/$id: " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('id', $result)) {
-      print_r($result);
-      exit(1);
+      throw new Exception("Error loading paragraph/$id: " . $result['message']);
     }
 
     return $result;
@@ -389,15 +371,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($ch);
     if ($result[0] !== '{') {
-      print $result;
-      exit(1);
+      throw new Exception("Error uploading file: " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists('fid', $result)) {
-      print_r($result);
-      exit(1);
+      throw new Exception("Error uploading file: " . $result['message']);
     }
 
     return $result;
