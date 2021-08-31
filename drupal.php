@@ -1,5 +1,9 @@
 <?php
 $drupalEntityConf = [
+  'taxonomy' => [
+    'prefix' => 'taxonomy/term',
+    'idField' => 'tid',
+  ],
 ];
 
 class DrupalRestAPI {
@@ -548,5 +552,17 @@ class DrupalRestAPI {
     $result = curl_exec($ch);
 
     return true;
+  }
+
+  function taxonomyRemove ($id) {
+    return $this->entityRemove('taxonomy', $id);
+  }
+
+  function taxonomyGet ($id) {
+    return $this->entityGet('taxonomy', $id);
+  }
+
+  function taxonomySave ($id, $content) {
+    return $this->entitySave('taxonomy', $id, $content);
   }
 }
