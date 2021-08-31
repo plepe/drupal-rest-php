@@ -1,4 +1,7 @@
 <?php
+$drupalEntityConf = [
+];
+
 class DrupalRestAPI {
   function __construct ($options = array()) {
     $this->options = $options;
@@ -456,5 +459,94 @@ class DrupalRestAPI {
     fclose($fp);
 
     return $result;
+  }
+
+  function entitySave ($entity, $id, $content) {
+    global $drupalEntityConf;
+
+    $current_node = null;
+
+    $ch = curl_init();
+
+    if ($id) {
+      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    }
+    else {
+      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}?_format=json");
+      curl_setopt($ch, CURLOPT_POST, true);
+    }
+
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Content-type: application/json',
+    ]);
+    $this->setOptions($ch);
+    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+      print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+    }
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '{') {
+      throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!array_key_exists('id', $result)) {
+      throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/$id: " . $result['message']);
+    }
+
+    return $result;
+  }
+
+  function entityGet ($entity, $id) {
+    global $drupalEntityConf;
+
+    $current_node = null;
+
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Content-type: application/json',
+    ]);
+    $this->setOptions($ch);
+
+    $result = curl_exec($ch);
+    if ($result[0] !== '{') {
+      throw new Exception("Error loading {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
+    }
+
+    $result = json_decode($result, true);
+
+    if (!array_key_exists($drupalEntityConf[$entity]['idField'], $result)) {
+      throw new Exception("Error loading {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result['message']);
+    }
+
+    return $result;
+  }
+
+  function entityRemove ($entity, $id) {
+    global $drupalEntityConf;
+
+    $current_node = null;
+
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'Content-type: application/json',
+    ]);
+    $this->setOptions($ch);
+
+    $result = curl_exec($ch);
+
+    return true;
   }
 }
