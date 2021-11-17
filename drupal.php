@@ -16,39 +16,40 @@ class DrupalRestAPI {
     if (array_key_exists('verbose', $this->options)) {
       $this->options['curl_options'][CURLOPT_VERBOSE] = $this->options['verbose'];
     }
+
+    $this->ch = curl_init();
+    $this->setOptions();
+    $this->auth($this->ch);
   }
 
-  function setOptions ($ch) {
+  function setOptions () {
     foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
+      curl_setopt($this->ch, $k, $v);
     }
   }
 
-  function auth ($ch) {
+  function auth () {
     if ($this->options['authMethod'] === 'cookie') {
-      $this->authCookie($ch);
+      $this->authCookie();
     } else {
-      $this->authBasicAuth($ch);
+      $this->authBasicAuth();
     }
   }
 
-  function authBasicAuth ($ch) {
+  function authBasicAuth () {
     if (isset($this->options['user'])) {
-      curl_setopt($ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
-      curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+      curl_setopt($this->ch, CURLOPT_USERPWD, "{$this->options['user']}:{$this->options['pass']}");
+      curl_setopt($this->ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     }
   }
 
-  function authCookie ($ch) {
+  function authCookie () {
     print "{$this->options['url']}/user/login\n";
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/login");
-    curl_setopt($ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/user/login");
+    curl_setopt($this->ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
+    curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($this->ch, CURLOPT_POST, 1);
 
     // This array will hold the field names and values.
     $postdata=array(
@@ -58,22 +59,19 @@ class DrupalRestAPI {
       "op"=>"Log in"
     );
     // Tell curl we're going to send $postdata as the POST data
-    curl_setopt ($ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
+    curl_setopt ($this->ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
 
-    $result=curl_exec($ch);
-    $headers = curl_getinfo($ch);
-    print_r($headers);
+    $result=curl_exec($this->ch);
+    $headers = curl_getinfo($this->ch);
 
     if ($headers['url'] == $this->options['url']) {
         die("Cannot login.");
     }
 
-    curl_setopt($ch, CURLOPT_POST, 0);
+    curl_setopt($this->ch, CURLOPT_POST, 0);
   }
 
   function loadRestExport ($path, $options = array()) {
-    $ch = curl_init();
-    $this->auth($ch);
     $total = array();
 
     $options['paginated'] = array_key_exists('paginated', $options) ? $options['paginated'] : true;
@@ -81,11 +79,11 @@ class DrupalRestAPI {
     $page = 0;
     do {
       $sep = strpos($path, '?') === false ? '?' : '&';
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}{$path}{$sep}page={$page}&_format=json");
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      $this->setOptions($ch);
+      print "{$this->options['url']}{$path}{$sep}page={$page}&_format=json\n";
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}{$path}{$sep}page={$page}&_format=json");
+      curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
-      $result = curl_exec($ch);
+      $result = curl_exec($this->ch);
       if (!$result || $result[0] !== '[') {
         throw new Exception("Error loading: " . $result);
       }
@@ -104,13 +102,10 @@ class DrupalRestAPI {
   }
 
   function nodeGet ($id, $options = array()) {
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/node/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/node/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $this->setOptions($ch);
-
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error loading '/node/{$id}': " . $result);
     }
@@ -165,28 +160,25 @@ class DrupalRestAPI {
       }
     }
 
-    $ch = curl_init();
-
     if ($nid) {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/node/{$nid}?_format=json");
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/node/{$nid}?_format=json");
+      curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
     else {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/node?_format=json");
-      curl_setopt($ch, CURLOPT_POST, true);
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/node?_format=json");
+      curl_setopt($this->ch, CURLOPT_POST, true);
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error saving node: " . $result);
     }
@@ -201,13 +193,10 @@ class DrupalRestAPI {
   }
 
   function userGet ($id, $options = array()) {
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/user/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $this->setOptions($ch);
-
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error loading '/user/{$id}': " . $result);
     }
@@ -226,13 +215,10 @@ class DrupalRestAPI {
   }
 
   function fileGet ($id, $options = array()) {
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/file/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/file/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $this->setOptions($ch);
-
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error loading '/entity/file/{$id}': " . $result);
     }
@@ -253,28 +239,25 @@ class DrupalRestAPI {
   function userSave ($nid, $content) {
     $current_node = null;
 
-    $ch = curl_init();
-
     if ($nid) {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/{$nid}?_format=json");
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/user/{$nid}?_format=json");
+      curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
     else {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/user?_format=json");
-      curl_setopt($ch, CURLOPT_POST, true);
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/user?_format=json");
+      curl_setopt($this->ch, CURLOPT_POST, true);
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error saving '/user/{$nid}': " . $result);
     }
@@ -289,18 +272,15 @@ class DrupalRestAPI {
   }
 
   function nodeRemove ($nid) {
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/node/{$nid}?_format=json");
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/node/{$nid}?_format=json");
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
 
     return true;
   }
@@ -308,28 +288,25 @@ class DrupalRestAPI {
   function paragraphSave ($id, $content) {
     $current_node = null;
 
-    $ch = curl_init();
-
     if ($id) {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
+      curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
     else {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph?_format=json");
-      curl_setopt($ch, CURLOPT_POST, true);
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph?_format=json");
+      curl_setopt($this->ch, CURLOPT_POST, true);
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error saving paragraph/$id: " . $result);
     }
@@ -346,16 +323,13 @@ class DrupalRestAPI {
   function paragraphGet ($id) {
     $current_node = null;
 
-    $ch = curl_init();
-
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error loading paragraph/$id: " . $result);
     }
@@ -372,18 +346,15 @@ class DrupalRestAPI {
   function paragraphRemove ($id) {
     $current_node = null;
 
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/entity/paragraph/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
 
     return true;
   }
@@ -392,8 +363,6 @@ class DrupalRestAPI {
    * entityPath: entity_type_id/bundle/field_name
    */
   function fileUpload ($file, $entityPath) {
-    $ch = curl_init();
-
     if (!is_array($file)) {
       $file = array(
         'filename' => $file,
@@ -409,17 +378,16 @@ class DrupalRestAPI {
       }
     }
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/file/upload/{$entityPath}?_format=json");
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/file/upload/{$entityPath}?_format=json");
+    curl_setopt($this->ch, CURLOPT_POST, true);
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/octet-stream',
       "Content-Disposition: file; filename=\"{$file['filename']}\""
     ]);
-    $this->setOptions($ch);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $file['content']);
+    curl_setopt($this->ch, CURLOPT_POSTFIELDS, $file['content']);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error uploading file: " . $result);
     }
@@ -434,75 +402,19 @@ class DrupalRestAPI {
   }
 
   function get ($url) {
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}{$url}");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/login");
-    curl_setopt($ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
-
-    // This array will hold the field names and values.
-    $postdata=array(
-      "name"=>$this->options['email'],
-      "pass"=>$this->options['pass'],
-      "form_id"=>"user_login_form",
-      "op"=>"Log in"
-    );
-    // Tell curl we're going to send $postdata as the POST data
-    curl_setopt ($ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
-
-    $result=curl_exec($ch);
-    $headers = curl_getinfo($ch);
-
-    if ($headers['url'] == $this->options['url']) {
-        die("Cannot login.");
-    }
-
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}{$url}");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    return curl_exec($ch);
+    return curl_exec($this->ch);
   }
 
   function download ($url, $file) {
-    $ch = curl_init();
-
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/user/login");
-    curl_setopt($ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    foreach ($this->options['curl_options'] as $k => $v) {
-      curl_setopt($ch, $k, $v);
-    }
-
-    // This array will hold the field names and values.
-    $postdata=array(
-      "name"=>$this->options['email'],
-      "pass"=>$this->options['pass'],
-      "form_id"=>"user_login_form",
-      "op"=>"Log in"
-    );
-    // Tell curl we're going to send $postdata as the POST data
-    curl_setopt ($ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
-
-    $result=curl_exec($ch);
-    $headers = curl_getinfo($ch);
-
-    if ($headers['url'] == $this->options['url']) {
-        die("Cannot login.");
-    }
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}{$url}");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 0);
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}{$url}");
     $fp = fopen($file, 'w+');
-    curl_setopt($ch, CURLOPT_FILE, $fp);
+    curl_setopt($this->ch, CURLOPT_FILE, $fp);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     fclose($fp);
 
     return $result;
@@ -513,28 +425,25 @@ class DrupalRestAPI {
 
     $current_node = null;
 
-    $ch = curl_init();
-
     if ($id) {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+      curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
     else {
-      curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}?_format=json");
-      curl_setopt($ch, CURLOPT_POST, true);
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}?_format=json");
+      curl_setopt($this->ch, CURLOPT_POST, true);
     }
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($content));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
     }
@@ -553,16 +462,13 @@ class DrupalRestAPI {
 
     $current_node = null;
 
-    $ch = curl_init();
-
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
       throw new Exception("Error loading {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
     }
@@ -581,18 +487,15 @@ class DrupalRestAPI {
 
     $current_node = null;
 
-    $ch = curl_init();
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
-    curl_setopt($ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
     ]);
-    $this->setOptions($ch);
 
-    $result = curl_exec($ch);
+    $result = curl_exec($this->ch);
 
     return true;
   }
