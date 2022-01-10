@@ -18,6 +18,7 @@ class DrupalRestAPI {
     }
 
     $this->ch = curl_init();
+    $this->sessionHeaders = [];
     $this->setOptions();
     $this->auth($this->ch);
   }
@@ -69,6 +70,14 @@ class DrupalRestAPI {
     }
 
     curl_setopt($this->ch, CURLOPT_POST, 0);
+
+    $this->getCSRFToken();
+  }
+
+  function getCSRFToken () {
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/session/token");
+    $this->CSRFToken = curl_exec($this->ch);
+    $this->sessionHeaders[] = "X-CSRF-Token: {$this->CSRFToken}";
   }
 
   function loadRestExport ($path, $options = array()) {
@@ -171,9 +180,9 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
