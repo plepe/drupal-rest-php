@@ -308,9 +308,9 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
@@ -390,10 +390,10 @@ class DrupalRestAPI {
     curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/file/upload/{$entityPath}?_format=json");
     curl_setopt($this->ch, CURLOPT_POST, true);
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/octet-stream',
       "Content-Disposition: file; filename=\"{$file['filename']}\""
-    ]);
+    ], $this->sessionHeaders));
     curl_setopt($this->ch, CURLOPT_POSTFIELDS, $file['content']);
 
     $result = curl_exec($this->ch);
