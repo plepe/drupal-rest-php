@@ -442,7 +442,7 @@ class DrupalRestAPI {
 
     $result = json_decode($result, true);
 
-    if (!array_key_exists('id', $result)) {
+    if (!array_key_exists($drupalEntityConf[$entity]['idField'], $result)) {
       throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/$id: " . $result['message']);
     }
 
