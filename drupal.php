@@ -1,12 +1,18 @@
 <?php
 $drupalEntityConf = [
   'taxonomy' => [
-    'prefix' => 'taxonomy/term',
+    'entityHandle' => 'taxonomy/term/%',
+    'createHandle' => 'taxonomy/term',
     'idField' => 'tid',
   ],
+  'media' => [
+    'entityHandle' => 'media/%/edit',
+    'createHandle' => 'entity/media',
+    'idField' => 'mid',
+  ],
   'file' => [
-    'prefix' => 'file',
-    'postUrl' => 'entity/file',
+    'entityHandle' => 'file/%',
+    'createHandle' => 'entity/file/%',
     'idField' => 'fid',
   ],
 ];
@@ -414,15 +420,18 @@ class DrupalRestAPI {
 
   function entitySave ($entity, $id, $content) {
     global $drupalEntityConf;
+    $e = $drupalEntityConf[$entity];
 
     $current_node = null;
 
     if ($id) {
-      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/" . strtr($e['entityHandle'], ['%' => $id]) . "?_format=json");
       curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     }
     else {
-      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}?_format=json");
+      $urlPart = strtr($e['createHandle'], ['%' => $id]);
+      curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$urlPart}?_format=json");
+      curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'POST');
       curl_setopt($this->ch, CURLOPT_POST, true);
     }
 
@@ -437,13 +446,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
-      throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
+      throw new Exception("Error saving {$entity}/{$id}: " . $result);
     }
 
     $result = json_decode($result, true);
 
     if (!array_key_exists($drupalEntityConf[$entity]['idField'], $result)) {
-      throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/$id: " . $result['message']);
+      throw new Exception("Error saving {$entity}/{$id}: " . $result['message']);
     }
 
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
@@ -454,10 +463,11 @@ class DrupalRestAPI {
 
   function entityGet ($entity, $id) {
     global $drupalEntityConf;
+    $e = $drupalEntityConf[$entity];
 
     $current_node = null;
 
-    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/" . strtr($e['entityHandle'], ['%' => $id]) . "?_format=json");
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
       'Content-type: application/json',
@@ -465,13 +475,13 @@ class DrupalRestAPI {
 
     $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
-      throw new Exception("Error loading {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result);
+      throw new Exception("Error loading {$entity}/{$id}: " . $result);
     }
 
     $result = json_decode($result, true);
 
-    if (!array_key_exists($drupalEntityConf[$entity]['idField'], $result)) {
-      throw new Exception("Error loading {$drupalEntityConf[$entity]['prefix']}/{$id}: " . $result['message']);
+    if (!array_key_exists($e['idField'], $result)) {
+      throw new Exception("Error loading {$entity}/{$id}: " . $result['message']);
     }
 
     return $result;
@@ -479,10 +489,11 @@ class DrupalRestAPI {
 
   function entityRemove ($entity, $id) {
     global $drupalEntityConf;
+    $e = $drupalEntityConf[$entity];
 
     $current_node = null;
 
-    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/{$drupalEntityConf[$entity]['prefix']}/{$id}?_format=json");
+    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/" . strtr($e['entityHandle'], ['%' => $id]) . "?_format=json");
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
@@ -505,6 +516,18 @@ class DrupalRestAPI {
 
   function taxonomySave ($id, $content) {
     return $this->entitySave('taxonomy', $id, $content);
+  }
+
+  function mediaRemove ($id) {
+    return $this->entityRemove('media', $id);
+  }
+
+  function mediaGet ($id) {
+    return $this->entityGet('media', $id);
+  }
+
+  function mediaSave ($id, $content) {
+    return $this->entitySave('media', $id, $content);
   }
 
   function fileRemove ($id) {
