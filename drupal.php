@@ -259,9 +259,9 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
@@ -445,9 +445,9 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($content));
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
       print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
@@ -462,6 +462,9 @@ class DrupalRestAPI {
     if (!array_key_exists('id', $result)) {
       throw new Exception("Error saving {$drupalEntityConf[$entity]['prefix']}/$id: " . $result['message']);
     }
+
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
 
     return $result;
   }
