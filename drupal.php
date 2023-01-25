@@ -4,6 +4,11 @@ $drupalEntityConf = [
     'prefix' => 'taxonomy/term',
     'idField' => 'tid',
   ],
+  'file' => [
+    'prefix' => 'file',
+    'postUrl' => 'entity/file',
+    'idField' => 'fid',
+  ],
 ];
 
 class DrupalRestAPI {
@@ -214,28 +219,6 @@ class DrupalRestAPI {
 
     if (!array_key_exists('uid', $result)) {
       throw new Exception("Error loading '/user/{$id}': " . $result['message']);
-    }
-
-    if (!$result || !sizeof($result)) {
-      return null;
-    }
-
-    return $result;
-  }
-
-  function fileGet ($id, $options = array()) {
-    curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/entity/file/{$id}?_format=json");
-    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-
-    $result = curl_exec($this->ch);
-    if ($result[0] !== '{') {
-      throw new Exception("Error loading '/entity/file/{$id}': " . $result);
-    }
-
-    $result = json_decode($result, true);
-
-    if (!array_key_exists('fid', $result)) {
-      throw new Exception("Error loading '/entity/file/{$id}': " . $result['message']);
     }
 
     if (!$result || !sizeof($result)) {
@@ -522,5 +505,17 @@ class DrupalRestAPI {
 
   function taxonomySave ($id, $content) {
     return $this->entitySave('taxonomy', $id, $content);
+  }
+
+  function fileRemove ($id) {
+    return $this->entityRemove('file', $id);
+  }
+
+  function fileGet ($id) {
+    return $this->entityGet('file', $id);
+  }
+
+  function fileSave ($id, $content) {
+    return $this->entitySave('file', $id, $content);
   }
 }
