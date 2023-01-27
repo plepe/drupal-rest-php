@@ -103,11 +103,12 @@ class DrupalRestAPI {
         $result = array();
       }
 
-      $total = array_merge($total, $result);
+      foreach ($result as $e) {
+        yield $e;
+      }
+
       $page++;
     } while($options['paginated'] && sizeof($result) > 0);
-
-    return $total;
   }
 
   function nodeGet ($id, $options = array()) {
