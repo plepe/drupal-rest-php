@@ -210,6 +210,9 @@ class DrupalRestAPI {
       throw new Exception($result['message']);
     }
 
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
+
     return $result;
   }
 
@@ -266,6 +269,9 @@ class DrupalRestAPI {
     if (!array_key_exists('uid', $result)) {
       throw new Exception("Error saving '/user/{$nid}': " . $result['message']);
     }
+
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
 
     return $result;
   }
