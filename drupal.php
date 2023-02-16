@@ -451,6 +451,10 @@ class DrupalRestAPI {
     }
 
     $result = curl_exec($this->ch);
+
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
+
     if ($result[0] !== '{') {
       throw new Exception("Error saving {$entity}/{$id}: " . $result);
     }
@@ -460,9 +464,6 @@ class DrupalRestAPI {
     if (!array_key_exists($drupalEntityConf[$entity]['idField'], $result)) {
       throw new Exception("Error saving {$entity}/{$id}: " . $result['message']);
     }
-
-    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
-    curl_setopt($this->ch, CURLOPT_POST, false);
 
     return $result;
   }
@@ -509,6 +510,8 @@ class DrupalRestAPI {
 
     $result = curl_exec($this->ch);
 
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
     return true;
   }
 
