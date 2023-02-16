@@ -95,7 +95,7 @@ class DrupalRestAPI {
 
     $options['paginated'] = array_key_exists('paginated', $options) ? $options['paginated'] : true;
 
-    $page = 0;
+    $page = $options['startPage'] ?? 0;
     do {
       $sep = strpos($path, '?') === false ? '?' : '&';
       print "{$this->options['url']}{$path}{$sep}page={$page}&_format=json\n";
