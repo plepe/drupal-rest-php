@@ -11,8 +11,7 @@ $drupalEntityConf = [
     'idField' => 'mid',
   ],
   'file' => [
-    'entityHandle' => 'file/%',
-    'createHandle' => 'entity/file/%',
+    'entityHandle' => 'entity/file/%',
     'idField' => 'fid',
   ],
 ];
