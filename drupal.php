@@ -512,7 +512,18 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
     curl_setopt($this->ch, CURLOPT_POST, false);
-    return true;
+
+    $status = curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
+    if ($result === '') {
+      return true;
+    }
+
+    $r = json_decode($result, true);
+    if (array_key_exists('message', $r)) {
+      throw new Exception("Error removing {$entity}/{$id}: " . $r['message']);
+    }
+
+    throw new Exception("Error removing {$entity}/{$id}:\n" . $result);
   }
 
   function taxonomyRemove ($id) {
