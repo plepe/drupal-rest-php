@@ -476,9 +476,9 @@ class DrupalRestAPI {
 
     curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/" . strtr($e['entityHandle'], ['%' => $id]) . "?_format=json");
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
 
     $result = curl_exec($this->ch);
     if ($result[0] !== '{') {
@@ -504,9 +504,9 @@ class DrupalRestAPI {
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
 
     $result = curl_exec($this->ch);
 
