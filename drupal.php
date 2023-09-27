@@ -14,6 +14,10 @@ $drupalEntityConf = [
     'entityHandle' => 'entity/file/%',
     'idField' => 'fid',
   ],
+  'path_alias' => [
+    'entityHandle' => 'entity/path_alias/%',
+    'idField' => 'id',
+  ],
 ];
 
 class DrupalRestAPI {
