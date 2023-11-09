@@ -284,9 +284,9 @@ class DrupalRestAPI {
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
 
     $result = curl_exec($this->ch);
 
@@ -358,9 +358,9 @@ class DrupalRestAPI {
     curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->ch, CURLOPT_HTTPHEADER, [
+    curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
-    ]);
+    ], $this->sessionHeaders));
 
     $result = curl_exec($this->ch);
 
