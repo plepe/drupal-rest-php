@@ -44,7 +44,7 @@ class DrupalRestAPI {
   }
 
   function auth () {
-    if ($this->options['authMethod'] === 'cookie') {
+    if (array_key_exists('authMethod', $this->options) && $this->options['authMethod'] === 'cookie') {
       $this->authCookie();
     } else {
       $this->authBasicAuth();
