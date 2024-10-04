@@ -18,6 +18,11 @@ $drupalEntityConf = [
     'entityHandle' => 'entity/path_alias/%',
     'idField' => 'id',
   ],
+  'bibcite/reference' => [
+    'entityHandle' => 'bibcite/reference/%',
+    'createHandle' => 'entity/bibcite_reference',
+    'idField' => 'id',
+  ],
 ];
 
 class DrupalRestAPI {
