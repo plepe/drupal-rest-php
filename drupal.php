@@ -435,6 +435,11 @@ class DrupalRestAPI {
 
   function entitySave ($entity, $id, $content) {
     global $drupalEntityConf;
+
+    if (!array_key_exists($entity, $drupalEntityConf)) {
+      throw new Exception("No drupal entity configuration for '{$entity}' found.");
+    }
+
     $e = $drupalEntityConf[$entity];
 
     $current_node = null;
@@ -479,6 +484,11 @@ class DrupalRestAPI {
 
   function entityGet ($entity, $id) {
     global $drupalEntityConf;
+
+    if (!array_key_exists($entity, $drupalEntityConf)) {
+      throw new Exception("No drupal entity configuration for '{$entity}' found.");
+    }
+
     $e = $drupalEntityConf[$entity];
 
     $current_node = null;
@@ -505,6 +515,11 @@ class DrupalRestAPI {
 
   function entityRemove ($entity, $id) {
     global $drupalEntityConf;
+
+    if (!array_key_exists($entity, $drupalEntityConf)) {
+      throw new Exception("No drupal entity configuration for '{$entity}' found.");
+    }
+
     $e = $drupalEntityConf[$entity];
 
     $current_node = null;
