@@ -55,6 +55,8 @@ class DrupalRestAPI {
       $this->options['curl_options'][CURLOPT_VERBOSE] = $this->options['verbose'];
     }
 
+    $this->debugStream = fopen('php://stderr', 'w');
+
     $this->ch = curl_init();
     $this->sessionHeaders = [];
     $this->setOptions();
@@ -83,7 +85,6 @@ class DrupalRestAPI {
   }
 
   function authCookie () {
-    print "{$this->options['url']}/user/login\n";
     curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}/user/login");
     curl_setopt($this->ch, CURLOPT_COOKIEFILE, ""); // use cookies, but don't save them
     curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -100,6 +101,7 @@ class DrupalRestAPI {
     // Tell curl we're going to send $postdata as the POST data
     curl_setopt ($this->ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
 
+    $this->debug("authCookie", "POST {$this->options['url']}/user/login");
     $result=curl_exec($this->ch);
     $headers = curl_getinfo($this->ch);
 
@@ -126,7 +128,7 @@ class DrupalRestAPI {
     $page = $options['startPage'] ?? 0;
     do {
       $sep = strpos($path, '?') === false ? '?' : '&';
-      print "{$this->options['url']}{$path}{$sep}page={$page}&_format=json\n";
+      $this->debug('loadRestExport', "GET {$this->options['url']}{$path}{$sep}page={$page}&_format=json");
       curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}{$path}{$sep}page={$page}&_format=json");
       curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -222,8 +224,9 @@ class DrupalRestAPI {
     curl_setopt($this->ch, CURLOPT_HTTPHEADER, array_merge([
       'Content-type: application/json',
     ], $this->sessionHeaders));
+
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      $this->debug('nodeSave', json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
     $result = curl_exec($this->ch);
@@ -283,7 +286,7 @@ class DrupalRestAPI {
       'Content-type: application/json',
     ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      $this->debug('userSave', json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
     $result = curl_exec($this->ch);
@@ -335,7 +338,7 @@ class DrupalRestAPI {
       'Content-type: application/json',
     ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      $this->debug('paragraphSave', json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
     $result = curl_exec($this->ch);
@@ -480,7 +483,7 @@ class DrupalRestAPI {
       'Content-type: application/json',
     ], $this->sessionHeaders));
     if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
-      print(json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+      $this->debug("entitySave/{$entity}", json_encode($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
 
     $result = curl_exec($this->ch);
@@ -603,5 +606,9 @@ class DrupalRestAPI {
 
   function fileSave ($id, $content) {
     return $this->entitySave('file', $id, $content);
+  }
+
+  function debug ($fun, $message) {
+    fprintf($this->debugStream, "$fun: $message\n");
   }
 }
