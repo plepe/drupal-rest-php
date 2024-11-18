@@ -23,6 +23,25 @@ $drupalEntityConf = [
     'createHandle' => 'entity/bibcite_reference',
     'idField' => 'id',
   ],
+  'bibcite/reference_type' => [
+    'entityHandle' => 'entity/bibcite_reference_type/%',
+    'idField' => 'id',
+  ],
+  'bibcite/contributor' => [
+    'entityHandle' => 'bibcite/contributor/%',
+    'createHandle' => 'entity/bibcite_contributor',
+    'idField' => 'id',
+  ],
+  'bibcite/contributor' => [
+    'entityHandle' => 'bibcite/contributor/%',
+    'createHandle' => 'entity/bibcite_contributor',
+    'idField' => 'id',
+  ],
+  'bibcite/keyword' => [
+    'entityHandle' => 'bibcite/keyword/%',
+    'createHandle' => 'entity/bibcite_keyword',
+    'idField' => 'id',
+  ],
 ];
 
 class DrupalRestAPI {
