@@ -433,6 +433,9 @@ class DrupalRestAPI {
       throw new Exception("Error uploading file: " . $result['message']);
     }
 
+    curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, null);
+    curl_setopt($this->ch, CURLOPT_POST, false);
+
     return $result;
   }
 
