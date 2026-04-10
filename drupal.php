@@ -101,7 +101,10 @@ class DrupalRestAPI {
     // Tell curl we're going to send $postdata as the POST data
     curl_setopt ($this->ch, CURLOPT_POSTFIELDS, http_build_query($postdata));
 
-    $this->debug("authCookie", "POST {$this->options['url']}/user/login");
+    if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+      $this->debug("authCookie", "POST {$this->options['url']}/user/login");
+    }
+
     $result=curl_exec($this->ch);
     $headers = curl_getinfo($this->ch);
 
@@ -128,7 +131,11 @@ class DrupalRestAPI {
     $page = $options['startPage'] ?? 0;
     do {
       $sep = strpos($path, '?') === false ? '?' : '&';
-      $this->debug('loadRestExport', "GET {$this->options['url']}{$path}{$sep}page={$page}&_format=json");
+
+      if (array_key_exists('verbose', $this->options) && $this->options['verbose']) {
+        $this->debug('loadRestExport', "GET {$this->options['url']}{$path}{$sep}page={$page}&_format=json");
+      }
+
       curl_setopt($this->ch, CURLOPT_URL, "{$this->options['url']}{$path}{$sep}page={$page}&_format=json");
       curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
 
